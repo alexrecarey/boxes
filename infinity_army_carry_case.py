@@ -21,7 +21,7 @@ from boxes.edges import Bolts
 
 
 class InfinityBox(Boxes):
-    """A simple Box
+    """A carrying case box for infinity miniatures geared towards tournament setting.
 
     Edges:
       h - Holes for finger joins.
@@ -29,6 +29,12 @@ class InfinityBox(Boxes):
       F - finger joins opposite side
       e - Straight edge
       E - ????
+
+      An MDF board 120x60x1 cm is 12 euros
+      Online MDF 244x122x3 mm is 14.29 euros
+      Online MDF 244x122x5 mm is 20.09 euros.
+
+
     """
 
     description = "This box is kept simple on purpose. If you need more features have a look at the UniversalBox."
