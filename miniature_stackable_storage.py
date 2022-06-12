@@ -78,18 +78,9 @@ class MiniatureStackableStorageBox(Boxes):
         Boxes.__init__(self)
         self.addSettingsArgs(edges.FingerJointSettings)
         self.buildArgParser(x=210, y=297, h=70)
-        self.argparser.add_argument(
-            "--screwdiameter", action="store", type=float, default=3.,
-            help="Diameter of the lid screw holes in mm for handle")
-        self.argparser.add_argument(
-            "--handlewidth", action="store", type=float, default=100,
-            help="Width of handle between holes in mm")
 
     def render(self):
-        x, y, h = self.x, self.y, self.h
-        sh = self.screwdiameter
-        hw = self.handlewidth
-        t = self.thickness
+        x, y, h, t = self.x, self.y, self.h, self.thickness
 
         # Prerequisites to create custom edge to create the stackable flanges
         stackable_edge_length = 30
@@ -118,27 +109,35 @@ class MiniatureStackableStorageBox(Boxes):
         stackable_compound_edge_top = edges.CompoundEdge(
             self, ["e", n, "e", n, "e"], long_side_section_lengths)
 
+        # Edges necessary for the lid
+        # These alternate between straight and outset straight to get around the notches in the box
+        lid_notch_edge = edges.CompoundEdge(
+            self, ['E', 'e', 'E', 'e', 'E'], long_side_section_lengths)
+
         # This custom edge has a huge cutout to see inside the box
         display_edge = DisplayCutoutEdge(self, self)
 
-        # This edge has extra length finger joints to pierce the plexiglass and front panel of wood
+        # Some edges need double length finger joints to pierce the plexiglass and front panel of wood
         fjs = edges.FingerJointSettings(t, extra_length=1)
         double_long_fingerjoint = edges.FingerJointEdge(self, fjs)
 
+        # Sizing guidelines. I think 4 of these boxes fit in an 1200x600 piece of 3mm board (without lid!)
+        #with self.saved_context():
+        #    self.rectangularWall(300, 600)
+
         # --- Main box structure ---
-        # base of box.
-        # now alternates edges correctly
+        # Base of box.
         self.rectangularWall(
             x, y, [double_long_fingerjoint, straight_compound_edge, 'f', straight_compound_edge],
-            move="up", label="Base")
+            move="rotated up", label="Base")
 
         # Side panels
         self.rectangularWall(
             y, h, [stackable_compound_edge_bottom, double_long_fingerjoint, stackable_compound_edge_top, 'f'],
-            move='up', label="Right side")
+            move='up', label="Left side")
         self.rectangularWall(
             y, h, [stackable_compound_edge_bottom, 'f', stackable_compound_edge_top, double_long_fingerjoint],
-            move='up', label="Left Side")
+            move='up', label="Right Side")
 
         # Back panel
         self.rectangularWall(x, h, 'hFeF', move='up', label="Back Panel")
@@ -147,15 +146,34 @@ class MiniatureStackableStorageBox(Boxes):
         self.rectangularWall(x, h, ["h", "F", display_edge, "F"], label="Display Panel front", move="up")
 
         # --- Lid ---
+        self.rectangularWall(x, y, ["E", lid_notch_edge, "E", lid_notch_edge], label="Lid of box", move="up")
+
+#
+# class MiniatureStackableStorageBoxLid(Boxes):
+#
+#     def __init__(self):
+#         Boxes.__init__(self)
+#         self.addSettingsArgs(edges.FingerJointSettings)
+#         self.buildArgParser(x=210, y=297, h=70)
+#
+#     def render(self):
+#         x, y, h, t = self.x, self.y, self.h, self.thickness
+#         stackable_edge_length = 30
+#         quarter_distance = y / 4
+#         long_side_section_lengths = (
+#             quarter_distance - stackable_edge_length / 2,
+#             stackable_edge_length,
+#             (quarter_distance - stackable_edge_length / 2) * 2,
+#             stackable_edge_length,
+#             quarter_distance - stackable_edge_length / 2
+#         )
+#         lid_notch_edge = edges.CompoundEdge(
+#             self, ['E', 'e', 'E', 'e', 'E'], long_side_section_lengths)
+#         self.rectangularWall(x, y, ["E", lid_notch_edge, "E", lid_notch_edge], label="Lid of box", move="up")
 
 
 if __name__ == '__main__':
     box = MiniatureStackableStorageBox()
-    box.x = 200
-    box.y = 400
-    box.z = 80
-    box.thickness = 3
-    print(sys.argv)
     box.parseArgs(sys.argv[1:])
     box.open()
     box.render()
